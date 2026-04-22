@@ -1,0 +1,219 @@
+%YAML 1.1
+---
+
+# =============================================================
+# Suricata Configuration — Lab (Reputation-focused)
+# =============================================================
+
+vars:
+  address-groups:
+    HOME_NET: "[192.168.100.0/24]"
+    EXTERNAL_NET: "!$HOME_NET"
+    HTTP_SERVERS: "$HOME_NET"
+    SMTP_SERVERS: "$HOME_NET"
+    SQL_SERVERS: "$HOME_NET"
+    DNS_SERVERS: "$HOME_NET"
+    TELNET_SERVERS: "$HOME_NET"
+    AIM_SERVERS: "$EXTERNAL_NET"
+    DNP3_SERVER: "$HOME_NET"
+    DNP3_CLIENT: "$HOME_NET"
+    MODBUS_CLIENT: "$HOME_NET"
+    MODBUS_SERVER: "$HOME_NET"
+    ENIP_CLIENT: "$HOME_NET"
+    ENIP_SERVER: "$HOME_NET"
+
+  port-groups:
+    HTTP_PORTS: "80"
+    SHELLCODE_PORTS: "!80"
+    ORACLE_PORTS: 1521
+    SSH_PORTS: 22
+    DNP3_PORTS: 20000
+    MODBUS_PORTS: 502
+    FILE_DATA_PORTS: "[$HTTP_PORTS,110,143]"
+    FTP_PORTS: 21
+    VXLAN_PORTS: 4789
+    TEREDO_PORTS: 3544
+
+# -------------------------------------------------------------------
+# Reputation (iprep)
+# -------------------------------------------------------------------
+
+# Categories file — maps category ID to a name
+reputation-categories-file: /etc/suricata/iprep/categories.txt
+# The reputation data file (IP → category,score)
+default-reputation-path: /etc/suricata/iprep
+reputation-files:
+  - reputation.list
+
+ # -------------------------------------------------------------------
+# Outputs
+# -------------------------------------------------------------------
+outputs:
+  - fast:
+      enabled: yes
+      filename: /var/log/suricata/fast.log
+      append: yes
+
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      types:
+        - alert:
+            payload: yes
+            payload-buffer-size: 4kb
+            payload-printable: yes
+            packet: yes
+            metadata: yes
+            http-body: yes
+            http-body-printable: yes
+            tagged-packets: yes
+        - http:
+            extended: yes
+        - dns:
+            query: yes
+            answer: yes
+        - tls:
+            extended: yes
+        - files:
+            force-magic: no
+        - smtp: {}
+        - ssh: {}
+        - stats:
+            totals: yes
+            threads: no
+            deltas: no
+        - flow: {}
+
+  - stats:
+      enabled: yes
+      filename: /var/log/suricata/stats.log
+      totals: yes
+      threads: no
+
+# -------------------------------------------------------------------
+# Logging
+# -------------------------------------------------------------------
+logging:
+  default-log-level: notice
+  outputs:
+    - console:
+        enabled: yes
+    - file:
+        enabled: yes
+        level: info
+        filename: /var/log/suricata/suricata.log
+
+# -------------------------------------------------------------------
+# AF-Packet capture
+# -------------------------------------------------------------------
+af-packet:
+  - interface: eth0
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+    use-mmap: yes
+    tpacket-v3: yes
+
+# -------------------------------------------------------------------
+# Detection engine
+# -------------------------------------------------------------------
+detect:
+  profile: medium
+  custom-values:
+    toclient-groups: 3
+    toserver-groups: 25
+  sgh-mpm-context: auto
+  inspection-recursion-limit: 3000
+
+# -------------------------------------------------------------------
+# Threading
+# -------------------------------------------------------------------
+threading:
+  set-cpu-affinity: no
+  cpu-affinity:
+    - management-cpu-set:
+        cpu: [ 0 ]
+    - receive-cpu-set:
+        cpu: [ 0 ]
+    - worker-cpu-set:
+        cpu: [ "all" ]
+        mode: "balanced"
+        prio:
+          low: [ 0 ]
+          medium: [ "1-2" ]
+          high: [ 3 ]
+          default: "medium"
+  detect-thread-ratio: 1.0
+
+# -------------------------------------------------------------------
+# Rules
+# -------------------------------------------------------------------
+default-rule-path: /etc/suricata/rules
+
+rule-files:
+  - local.rules
+
+# -------------------------------------------------------------------
+# App-layer protocols
+# -------------------------------------------------------------------
+app-layer:
+  protocols:
+    tls:
+      enabled: yes
+      detection-ports:
+        dp: 443
+    http:
+      enabled: yes
+      libhtp:
+        default-config:
+          personality: IDS
+          request-body-limit: 100kb
+          response-body-limit: 100kb
+    dns:
+      tcp:
+        enabled: yes
+        detection-ports:
+          dp: 53
+      udp:
+        enabled: yes
+        detection-ports:
+          dp: 53
+    ssh:
+      enabled: yes
+    smtp:
+      enabled: yes
+    ftp:
+      enabled: yes
+    rdp:
+      enabled: yes
+    http2:
+      enabled: yes
+
+# -------------------------------------------------------------------
+# Flow / defrag / stream
+# -------------------------------------------------------------------
+flow:
+  memcap: 128mb
+  hash-size: 65536
+  prealloc: 10000
+  emergency-recovery: 30
+
+defrag:
+  memcap: 32mb
+  hash-size: 65536
+  trackers: 65535
+  max-frags: 65535
+  prealloc: yes
+  timeout: 60
+
+stream:
+  memcap: 64mb
+  checksum-validation: yes
+  inline: no
+  reassembly:
+    memcap: 256mb
+    depth: 1mb
+    toserver-chunk-size: 2560
+    toclient-chunk-size: 2560
+    randomize-chunk-size: yes

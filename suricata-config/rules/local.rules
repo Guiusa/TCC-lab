@@ -1,0 +1,16 @@
+alert icmp any any -> any any (msg:"ICMP Echo Request"; itype:8; icode:0; sid:9001001; rev:1;)
+
+drop ip any any -> any any (msg:"Dropar dinamicamente os pacotes"; flow:to_server; lua:drop/script_1rep.lua; iprep:src,Down,>,1; sid:1;)
+
+
+drop ip any any -> any any (msg:"Dropar dinamicamente os pacotes"; flow:to_server; lua:drop/script_25rep.lua; iprep:src,Down,>,25; sid:2;)
+
+
+drop ip any any -> any any (msg:"Dropar dinamicamente os pacotes"; flow:to_server; lua:drop/script_50rep.lua; iprep:src,Down,>,50; sid:3;)
+
+
+drop ip any any -> any any (msg:"Dropar dinamicamente os pacotes"; flow:to_server; lua:drop/script_75rep.lua; iprep:src,Down,>,75; sid:4;)
+
+
+drop ip any any -> any any (msg:"Dropar dinamicamente os pacotes"; flow:to_server; lua:drop/script_100rep.lua; iprep:src,Down,>,100; sid:5;)
+

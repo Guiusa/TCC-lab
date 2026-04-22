@@ -1,0 +1,48 @@
+version: "3.9"
+
+networks:
+  lab-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+
+services:
+
+  suricata:
+    build:
+      context: ./suricata-config
+      dockerfile: Dockerfile
+    container_name: suricata
+    hostname: suricata
+    networks:
+      lab-net:
+        ipv4_address: 192.168.100.10
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    volumes:
+      - ./suricata-config:/etc/suricata
+      - suricata-logs:/var/log/suricata
+    command: >
+      suricata -c /etc/suricata/suricata.yaml -i eth0
+    restart: unless-stopped
+
+  host:
+    build:
+      context: ./host-files
+      dockerfile: Dockerfile
+    container_name: host
+    hostname: host
+    networks:
+      lab-net:
+        ipv4_address: 192.168.100.20
+    volumes:
+      - ./host-files:/root/host-files
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+
+volumes:
+  suricata-logs:

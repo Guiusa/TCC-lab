@@ -1,0 +1,2 @@
+1,Down,Hosts que estão perdendo reputação
+2,Up,Hosts que estão ganhando reputação
