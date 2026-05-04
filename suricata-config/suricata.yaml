@@ -1,9 +1,11 @@
 %YAML 1.1
 ---
 
-# =============================================================
-# Suricata Configuration — Lab (Reputation-focused)
-# =============================================================
+nfq:
+  mode: repeat
+  repeat-mark: 1
+  repeat-mask: 1
+  queue-num: 0
 
 vars:
   address-groups:
@@ -34,20 +36,11 @@ vars:
     VXLAN_PORTS: 4789
     TEREDO_PORTS: 3544
 
-# -------------------------------------------------------------------
-# Reputation (iprep)
-# -------------------------------------------------------------------
-
-# Categories file — maps category ID to a name
 reputation-categories-file: /etc/suricata/iprep/categories.txt
-# The reputation data file (IP → category,score)
 default-reputation-path: /etc/suricata/iprep
 reputation-files:
   - reputation.list
 
- # -------------------------------------------------------------------
-# Outputs
-# -------------------------------------------------------------------
 outputs:
   - fast:
       enabled: yes
@@ -85,15 +78,16 @@ outputs:
             deltas: no
         - flow: {}
 
+  - alert-debug:
+      enabled: yes
+      filename: /var/log/suricata/alert-debug.log
+
   - stats:
       enabled: yes
       filename: /var/log/suricata/stats.log
       totals: yes
       threads: no
 
-# -------------------------------------------------------------------
-# Logging
-# -------------------------------------------------------------------
 logging:
   default-log-level: notice
   outputs:
@@ -104,9 +98,6 @@ logging:
         level: info
         filename: /var/log/suricata/suricata.log
 
-# -------------------------------------------------------------------
-# AF-Packet capture
-# -------------------------------------------------------------------
 af-packet:
   - interface: eth0
     cluster-id: 99
@@ -115,9 +106,6 @@ af-packet:
     use-mmap: yes
     tpacket-v3: yes
 
-# -------------------------------------------------------------------
-# Detection engine
-# -------------------------------------------------------------------
 detect:
   profile: medium
   custom-values:
@@ -126,9 +114,6 @@ detect:
   sgh-mpm-context: auto
   inspection-recursion-limit: 3000
 
-# -------------------------------------------------------------------
-# Threading
-# -------------------------------------------------------------------
 threading:
   set-cpu-affinity: no
   cpu-affinity:
@@ -146,17 +131,18 @@ threading:
           default: "medium"
   detect-thread-ratio: 1.0
 
-# -------------------------------------------------------------------
-# Rules
-# -------------------------------------------------------------------
 default-rule-path: /etc/suricata/rules
-
 rule-files:
   - local.rules
 
-# -------------------------------------------------------------------
-# App-layer protocols
-# -------------------------------------------------------------------
+unix-command:
+  enabled: yes
+
+security:
+  lua:
+    allow-rules: true
+    allow-restricted-function: true
+
 app-layer:
   protocols:
     tls:
@@ -190,9 +176,6 @@ app-layer:
     http2:
       enabled: yes
 
-# -------------------------------------------------------------------
-# Flow / defrag / stream
-# -------------------------------------------------------------------
 flow:
   memcap: 128mb
   hash-size: 65536

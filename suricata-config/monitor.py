@@ -86,7 +86,7 @@ def change_reputation(ip, value, msg):
             if line.startswith(ip):
                 category, reputation = line.split(',')[1:]
                 
-                reputation = int(reputation) + 0#int(value)
+                reputation = int(reputation) + int(value)
                 if value < 0: 
                     reputation = max(reputation, 0)
                 else:

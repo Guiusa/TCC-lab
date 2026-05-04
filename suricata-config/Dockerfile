@@ -9,10 +9,15 @@ RUN dnf install -y --allowerasing \
     iproute \
     iputils \
     net-tools \
+    iptables \
     wget \
     python3 \
     python3-pip \
     jq \
-    iptables \
     && dnf clean all \
     && pip install pyinotify
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -6,7 +6,6 @@ networks:
         - subnet: 192.168.100.0/24
 
 services:
-
   suricata:
     build:
       context: ./suricata-config
@@ -22,8 +21,8 @@ services:
       - SYS_NICE
     volumes:
       - ./suricata-config:/etc/suricata
-      - suricata-logs:/var/log/suricata
-    command: iptables -h
+    ports:
+      - "80:80"
     restart: unless-stopped
 
   host:
