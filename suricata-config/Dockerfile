@@ -13,5 +13,6 @@ RUN dnf install -y --allowerasing \
     python3 \
     python3-pip \
     jq \
+    iptables \
     && dnf clean all \
     && pip install pyinotify

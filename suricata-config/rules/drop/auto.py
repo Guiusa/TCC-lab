@@ -19,16 +19,15 @@ rule = """
 drop ip any any -> any any \
 (\
 msg:"Dropar dinamicamente os pacotes"; \
-flow:to_server; \
 lua:drop/script_{}rep.lua; \
-iprep:src,Down,>,{}; sid:{};)
+iprep:src,Down,<,{}; sid:{};)
 """
 drop_chance = {
-    1: 1.0,
+    1:  1.0,
     25: 0.75,
     50: 0.5,
     75: 0.25,
-    100: 0.0
+    100: 0.1
 }
 
 i = 1

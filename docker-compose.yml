@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   lab-net:
     driver: bridge
@@ -25,8 +23,7 @@ services:
     volumes:
       - ./suricata-config:/etc/suricata
       - suricata-logs:/var/log/suricata
-    command: >
-      suricata -c /etc/suricata/suricata.yaml -i eth0
+    command: iptables -h
     restart: unless-stopped
 
   host:

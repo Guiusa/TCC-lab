@@ -5,7 +5,7 @@ function init (args)
 end
 
 function match(args)
-    if math.random() < 0.0 then
+    if math.random() < 0.1 then
         return 1
     end
     return 0

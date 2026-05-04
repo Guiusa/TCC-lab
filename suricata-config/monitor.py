@@ -69,6 +69,7 @@ def updateRep(ip, rep):
     with open(reputation_history_file, 'w') as file:    
         json.dump(data, file, indent=4)
     
+    subprocess.run('kill -USR2 $(pidof suricata)', shell=True)
     return m
 
 # Atualizando reputação de IPs que tiveram interações mal intencionadas com o Suricata
@@ -85,7 +86,7 @@ def change_reputation(ip, value, msg):
             if line.startswith(ip):
                 category, reputation = line.split(',')[1:]
                 
-                reputation = int(reputation) + int(value)
+                reputation = int(reputation) + 0#int(value)
                 if value < 0: 
                     reputation = max(reputation, 0)
                 else:

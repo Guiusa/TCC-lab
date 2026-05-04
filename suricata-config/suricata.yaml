@@ -210,7 +210,7 @@ defrag:
 stream:
   memcap: 64mb
   checksum-validation: yes
-  inline: no
+  inline: yes
   reassembly:
     memcap: 256mb
     depth: 1mb
